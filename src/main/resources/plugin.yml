@@ -1,0 +1,13 @@
+name: CryptoTipper
+version: '0.1'
+main: org.Nugetzrul3.CryptoTipper.Main
+api-version: '1.21'
+commands:
+  hello:
+    description: Get user info
+  info:
+    description: Get blockchain info
+  tiphelp:
+    description: Get help info
+  balance:
+    description: Get user balance
