@@ -12,7 +12,7 @@ import java.sql.Statement;
 public final class Database {
     private static Database instance;
     private DataSource dataSource;
-    private Constants constants = new Constants();
+    private final Constants constants = new Constants();
 
     private Database() {
     }
@@ -41,7 +41,8 @@ public final class Database {
                     CREATE TABLE IF NOT EXISTS users(
                         id SERIAL PRIMARY KEY,
                         uuid TEXT NOT NULL UNIQUE,
-                        username TEXT
+                        username TEXT,
+                        address TEXT DEFAULT NULL
                     )
                     """;
             statement.execute(createScript);

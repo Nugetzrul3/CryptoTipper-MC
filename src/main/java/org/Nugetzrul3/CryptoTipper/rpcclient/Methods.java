@@ -4,7 +4,6 @@ import com.google.gson.*;
 import org.Nugetzrul3.CryptoTipper.Constants;
 
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
 /// Contains RPC methods that are used throughout the tip plugin
@@ -15,7 +14,7 @@ public class Methods {
         this.client = new Client();
     }
 
-    public CompletableFuture<JsonObject> blockchainInfo() {
+    public CompletableFuture<JsonObject> getBlockchainInfo() {
         CompletableFuture<HttpResponse<String>> blockchainInfo = this.client.sendRequest("getblockchaininfo");
         CompletableFuture<HttpResponse<String>> networkHashPs = this.client.sendRequest("getnetworkhashps");
 
@@ -40,7 +39,7 @@ public class Methods {
         });
     }
 
-    public CompletableFuture<JsonObject> userBalance(String uuid) {
+    public CompletableFuture<JsonObject> getUserBalance(String uuid) {
         JsonArray params =  new JsonArray();
         params.add(uuid);
         params.add(0);
@@ -77,5 +76,15 @@ public class Methods {
             return resultJson;
         });
 
+    }
+
+    public CompletableFuture<JsonObject> getDepositAddress(String uuid) {
+        JsonArray params =  new JsonArray();
+        params.add(uuid);
+
+        return this.client.sendRequest(
+                "getaccountaddress",
+                params
+        ).thenApply(response -> JsonParser.parseString(response.body()).getAsJsonObject());
     }
 }
