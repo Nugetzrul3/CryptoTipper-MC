@@ -1,7 +1,7 @@
 package org.Nugetzrul3.CryptoTipper;
 
 import org.Nugetzrul3.CryptoTipper.commands.Balance;
-import org.Nugetzrul3.CryptoTipper.commands.Hello;
+import org.Nugetzrul3.CryptoTipper.commands.Deposit;
 import org.Nugetzrul3.CryptoTipper.commands.Help;
 import org.Nugetzrul3.CryptoTipper.commands.Info;
 import org.Nugetzrul3.CryptoTipper.db.Database;
@@ -22,10 +22,10 @@ public final class Main extends JavaPlugin {
 
         try {
             db.initDb();
-            new Hello(this);
             new Info(this);
             new Help(this);
             new Balance(this);
+            new Deposit(this);
         } catch (SQLException ex) {
             sender.sendMessage(ChatColor.RED + "Error while initializing database and commands!");
             ex.printStackTrace(System.err);

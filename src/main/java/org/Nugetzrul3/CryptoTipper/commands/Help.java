@@ -11,11 +11,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 public class Help implements CommandExecutor {
-    private final Constants constants = new Constants();
+    private final Constants constants;
 
     public Help(JavaPlugin plugin) {
         if (plugin.getDescription().getCommands().containsKey("tiphelp")) {
             plugin.getCommand("tiphelp").setExecutor(new CommandWrapper(this, plugin));
+            this.constants = new Constants();
         } else {
             throw new Error("Help command not found!");
         }

@@ -4,7 +4,8 @@ package org.Nugetzrul3.CryptoTipper.db.dao;
 public record User(
         Integer id,
         String uuid,
-        String username
+        String username,
+        String address
 ) {
 
 }

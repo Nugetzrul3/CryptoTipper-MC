@@ -39,9 +39,10 @@ public class UserRepository {
 
                 if (rs.next()) {
                     return new User(
-                           rs.getInt(0),
-                           rs.getString(1),
-                           rs.getString(2)
+                           rs.getInt(1),
+                           rs.getString(2),
+                           rs.getString(3),
+                           rs.getString(4)
                     );
                 } else {
                     return null;
@@ -64,13 +65,30 @@ public class UserRepository {
 
                 if (rs.next()) {
                     return new User(
-                            rs.getInt(0),
-                            rs.getString(1),
-                            rs.getString(2)
+                            rs.getInt(1),
+                            rs.getString(2),
+                            rs.getString(3),
+                            rs.getString(4)
                     );
                 } else {
                     return null;
                 }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    public void updateUserAddress(String uuid, String address) {
+        CompletableFuture.runAsync(() -> {
+            try (
+                    Connection conn = Database.getInstance().getConnection();
+                    PreparedStatement statement = conn.prepareStatement("UPDATE users SET address = ? WHERE uuid = ?")
+            ) {
+                statement.setString(1, address);
+                statement.setString(2, uuid);
+
+                statement.executeUpdate();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
