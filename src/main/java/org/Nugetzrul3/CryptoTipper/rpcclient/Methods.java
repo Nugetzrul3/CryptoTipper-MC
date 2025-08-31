@@ -87,4 +87,16 @@ public class Methods {
                 params
         ).thenApply(response -> JsonParser.parseString(response.body()).getAsJsonObject());
     }
+
+    public CompletableFuture<JsonObject> withdraw(String address, Double amount, String uuid) {
+        JsonArray params = new JsonArray();
+        params.add(uuid);
+        params.add(address);
+        params.add(amount);
+
+        return this.client.sendRequest(
+                "sendfrom",
+                params
+        ).thenApply(response -> JsonParser.parseString(response.body()).getAsJsonObject());
+    }
 }

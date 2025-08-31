@@ -11,3 +11,5 @@ commands:
     description: Get user balance
   deposit:
     description: Get deposit address
+  withdraw:
+    description: Withdraw amount to address

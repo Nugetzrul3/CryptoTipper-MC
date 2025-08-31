@@ -57,7 +57,7 @@ public class Deposit implements CommandExecutor {
                             String newAddress = response.get("result").getAsString();
 
                             // Now update DB inside the async callback
-                            this.userRepository.updateUserAddress(player.getUniqueId().toString(), newAddress);
+                            this.userRepository.updateUserAddress(player.getUniqueId().toString(), newAddress, "deposit");
 
                             // Build and send the TextComponent on the main thread
                             TextComponent tc = new TextComponent();

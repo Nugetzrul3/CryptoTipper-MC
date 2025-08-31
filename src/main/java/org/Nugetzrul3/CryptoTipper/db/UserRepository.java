@@ -39,10 +39,11 @@ public class UserRepository {
 
                 if (rs.next()) {
                     return new User(
-                           rs.getInt(1),
-                           rs.getString(2),
-                           rs.getString(3),
-                           rs.getString(4)
+                            rs.getInt(1),
+                            rs.getString(2),
+                            rs.getString(3),
+                            rs.getString(4),
+                            rs.getString(5)
                     );
                 } else {
                     return null;
@@ -68,7 +69,8 @@ public class UserRepository {
                             rs.getInt(1),
                             rs.getString(2),
                             rs.getString(3),
-                            rs.getString(4)
+                            rs.getString(4),
+                            rs.getString(5)
                     );
                 } else {
                     return null;
@@ -79,12 +81,19 @@ public class UserRepository {
         });
     }
 
-    public void updateUserAddress(String uuid, String address) {
+    public void updateUserAddress(String uuid, String address, String type) {
         CompletableFuture.runAsync(() -> {
             try (
-                    Connection conn = Database.getInstance().getConnection();
-                    PreparedStatement statement = conn.prepareStatement("UPDATE users SET address = ? WHERE uuid = ?")
+                    Connection conn = Database.getInstance().getConnection()
             ) {
+                PreparedStatement statement;
+                if (type.equals("withdraw")) {
+                    statement = conn.prepareStatement("UPDATE users SET withdraw_addr = ? WHERE uuid = ?");
+                } else if (type.equals("deposit")) {
+                    statement = conn.prepareStatement("UPDATE users SET address = ? WHERE uuid = ?");
+                } else {
+                    return;
+                }
                 statement.setString(1, address);
                 statement.setString(2, uuid);
 

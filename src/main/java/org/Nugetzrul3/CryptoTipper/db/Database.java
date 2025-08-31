@@ -42,7 +42,8 @@ public final class Database {
                         id SERIAL PRIMARY KEY,
                         uuid TEXT NOT NULL UNIQUE,
                         username TEXT,
-                        address TEXT DEFAULT NULL
+                        address TEXT DEFAULT NULL,
+                        withdraw_addr TEXT DEFAULT NULL
                     )
                     """;
             statement.execute(createScript);

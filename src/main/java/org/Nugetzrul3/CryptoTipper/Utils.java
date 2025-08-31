@@ -27,4 +27,13 @@ public class Utils {
             return null;
         }
     }
+
+    public static boolean isDouble(String amount) {
+        try {
+            Double.parseDouble(amount);
+            return true;
+        } catch (NumberFormatException | NullPointerException e) {
+            return false;
+        }
+    }
 }
