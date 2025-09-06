@@ -1,15 +1,12 @@
 package org.Nugetzrul3.CryptoTipper;
 
-import org.Nugetzrul3.CryptoTipper.commands.Balance;
-import org.Nugetzrul3.CryptoTipper.commands.Deposit;
-import org.Nugetzrul3.CryptoTipper.commands.Help;
-import org.Nugetzrul3.CryptoTipper.commands.Info;
+import org.Nugetzrul3.CryptoTipper.commands.*;
 import org.Nugetzrul3.CryptoTipper.db.Database;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
-import java.sql.*;
+import java.sql.SQLException;
 
 public final class Main extends JavaPlugin {
     @Override
@@ -26,6 +23,7 @@ public final class Main extends JavaPlugin {
             new Help(this);
             new Balance(this);
             new Deposit(this);
+            new Withdraw(this);
         } catch (SQLException ex) {
             sender.sendMessage(ChatColor.RED + "Error while initializing database and commands!");
             ex.printStackTrace(System.err);

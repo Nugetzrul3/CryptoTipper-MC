@@ -35,7 +35,7 @@ public class Info implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Player player = (Player) sender;
         player.sendMessage(ChatColor.AQUA + ChatColor.BOLD.toString() + "Getting blockchain info...");
-        methods.getBlockchainInfo()
+        this.methods.getBlockchainInfo()
                 .thenAccept(response -> {
                     if (!(response.get("error") instanceof JsonNull)) {
                         Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
@@ -47,12 +47,17 @@ public class Info implements CommandExecutor {
                     }
 
                     JsonObject resultJson = response.getAsJsonObject("result");
+                    int blockHeight = resultJson.get("blocks").getAsInt();
+                    JsonObject supplyAndRewardJson = Utils.calculateSupplyAndReward(blockHeight);
                     // Run on the main server thread
                     Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                            ChatColor.AQUA + ChatColor.BOLD.toString() + constants.ticker + " blockchain info: \n" +
-                            ChatColor.GREEN + "Block height: " + resultJson.get("blocks") + "\n" +
+                            ChatColor.AQUA + ChatColor.BOLD.toString() + constants.ticker + " Blockchain info: \n" +
+                            ChatColor.GREEN + "Block height: " + blockHeight + "\n" +
                             ChatColor.GREEN + "Blockchain hashps: " + Utils.getHashFormat(resultJson.get("hashps").getAsFloat()) + "\n" +
-                            ChatColor.GREEN + "Blockchain difficulty" + resultJson.get("difficulty")
+                            ChatColor.GREEN + "Blockchain difficulty: " + resultJson.get("difficulty") + "\n" +
+                            ChatColor.GREEN + "Current block reward: " + supplyAndRewardJson.get("reward").getAsString() + "\n" +
+                            ChatColor.GREEN + "Number of halvings: " + supplyAndRewardJson.get("halvings") + "\n" +
+                            ChatColor.GREEN + "Current circulating supply: " + supplyAndRewardJson.get("supply").getAsString()
                     ));
                 });
 

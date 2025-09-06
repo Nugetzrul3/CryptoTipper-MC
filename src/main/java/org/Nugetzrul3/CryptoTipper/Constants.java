@@ -15,8 +15,7 @@ public class Constants {
     public String coinName = "AdventureCoin";
     public int conf = 6;
     public String explorer = "https://explorer.adventurecoin.quest/#/transaction/";
-    public BigDecimal withdraw_fee = new BigDecimal("0.001");
-    public String price_url = "https://api.coingecko.com/api/v3/simple/price?ids=advc&vs_currencies=btc,usd";
+    public Double withdraw_fee = 0.5;
 
 
     // DB consts
