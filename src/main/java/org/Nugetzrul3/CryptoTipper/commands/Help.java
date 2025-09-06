@@ -27,12 +27,13 @@ public class Help implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Player player = (Player) sender;
         player.sendMessage(ChatColor.BLUE + "Welcome to the " + ChatColor.BLUE + this.constants.coinName + " MC Tipbot. Here are my commands\n" +
-                ChatColor.DARK_PURPLE + "1. /tiphelp: " + ChatColor.WHITE + "Displays this help message\n" +
-                ChatColor.DARK_PURPLE + "2. /tip <username> <amount>: " + ChatColor.WHITE + "Tip's a certain amount of " + this.constants.ticker + " to another user\n" +
-                ChatColor.DARK_PURPLE + "3. /deposit: " + ChatColor.WHITE +"Gives you a " + this.constants.ticker + " address to deposit " + this.constants.ticker + " to\n" +
-                ChatColor.DARK_PURPLE + "4. /withdraw <amount> <" + this.constants.ticker + " address>: " + ChatColor.WHITE + "Withdraw a certain amount from your bot balance\n" +
-                ChatColor.DARK_PURPLE + "5. /info: " + ChatColor.WHITE + "Returns general information on the " + constants.coinName + " blockchain\n" +
-                ChatColor.DARK_PURPLE + "6. /balance: " + ChatColor.WHITE + "Returns your current account balance"
+            ChatColor.DARK_PURPLE + "1. /tiphelp: " + ChatColor.WHITE + "Displays this help message\n" +
+            ChatColor.DARK_PURPLE + "2. /tip <username> <amount>: " + ChatColor.WHITE + "Tip's a certain amount of " + this.constants.ticker + " to another user\n" +
+            ChatColor.DARK_PURPLE + "3. /deposit: " + ChatColor.WHITE + "Gives you a " + this.constants.ticker + " address to deposit " + this.constants.ticker + " to\n" +
+            ChatColor.DARK_PURPLE + "4. /withdraw <amount> <" + this.constants.ticker + " address>: " + ChatColor.WHITE + "Withdraw a certain amount from your bot balance\n" +
+            "Note: A withdrawal fee of " + this.constants.withdraw_fee + " " + this.constants.ticker + " will be incurred per withdrawal" +
+            ChatColor.DARK_PURPLE + "5. /info: " + ChatColor.WHITE + "Returns general information on the " + this.constants.coinName + " blockchain\n" +
+            ChatColor.DARK_PURPLE + "6. /balance: " + ChatColor.WHITE + "Returns your current account balance"
         );
 
         return false;

@@ -9,8 +9,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.sql.Array;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 
@@ -21,7 +19,7 @@ public class Client {
     public Client() {
         client = HttpClient.newHttpClient();
         constants = new Constants();
-        }
+    }
 
     public CompletableFuture<HttpResponse<String>> sendRequest(String method) {
         JsonObject jsonObject = new JsonObject();
@@ -34,11 +32,11 @@ public class Client {
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(String.format("http://%s:%d", constants.rpchost, constants.rpcport)))
-                .header("Authorization", "Basic " + encodedAuth)
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                .build();
+            .uri(URI.create(String.format("http://%s:%d", constants.rpchost, constants.rpcport)))
+            .header("Authorization", "Basic " + encodedAuth)
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+            .build();
 
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
     }
@@ -54,11 +52,11 @@ public class Client {
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(String.format("http://@%s:%d", constants.rpchost, constants.rpcport)))
-                .header("Authorization", "Basic " + encodedAuth)
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                .build();
+            .uri(URI.create(String.format("http://@%s:%d", constants.rpchost, constants.rpcport)))
+            .header("Authorization", "Basic " + encodedAuth)
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+            .build();
 
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
     }

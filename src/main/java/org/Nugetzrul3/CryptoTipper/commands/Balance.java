@@ -35,19 +35,19 @@ public class Balance implements CommandExecutor {
 
         player.sendMessage(ChatColor.AQUA + ChatColor.BOLD.toString() + "Getting balance...");
         this.methods.getUserBalance(
-                player.getUniqueId().toString()
+            player.getUniqueId().toString()
         ).thenAccept(response -> {
             if (!(response.get("error") instanceof JsonNull)) {
                 Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                        ChatColor.RED + "Error getting balance! Contact admins and show them this: \n" +
-                                "Error: " + response.get("error").toString()
+                    ChatColor.RED + "Error getting balance! Contact admins and show them this: \n" +
+                        "Error: " + response.get("error").toString()
                 ));
 
                 return;
             }
 
             Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                    ChatColor.AQUA + ChatColor.BOLD.toString() + "Your unconfirmed balance: " + response.get("unconfBal") + " " + constants.ticker + "\n"
+                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your unconfirmed balance: " + response.get("unconfBal") + " " + constants.ticker + "\n"
                     + ChatColor.GREEN + ChatColor.BOLD + "Your confirmed balance: " + response.get("confBal") + " " + constants.ticker
             ));
 

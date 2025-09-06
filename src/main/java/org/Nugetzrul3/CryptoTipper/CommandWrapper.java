@@ -34,13 +34,13 @@ public class CommandWrapper implements CommandExecutor {
         String username = player.getName();
 
         this.userRepository.upsertUser(uuid, username)
-                .thenRun(() -> plugin.getServer().getScheduler().runTask(plugin, () -> inner.onCommand(sender, cmd, label, args)))
-                .exceptionally(ex -> {
-                    plugin.getServer().getScheduler().runTask(plugin,
-                            () -> player.sendMessage(ChatColor.RED + "Database Error! Contact the admins"));
-                    ex.printStackTrace(System.err);
-                    return null;
-                });
+            .thenRun(() -> plugin.getServer().getScheduler().runTask(plugin, () -> inner.onCommand(sender, cmd, label, args)))
+            .exceptionally(ex -> {
+                plugin.getServer().getScheduler().runTask(plugin,
+                    () -> player.sendMessage(ChatColor.RED + "Database Error! Contact the admins"));
+                ex.printStackTrace(System.err);
+                return null;
+            });
 
         return true;
     }

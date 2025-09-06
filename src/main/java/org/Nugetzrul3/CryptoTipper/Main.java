@@ -6,7 +6,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
-import java.sql.*;
+import java.sql.SQLException;
 
 public final class Main extends JavaPlugin {
     @Override
