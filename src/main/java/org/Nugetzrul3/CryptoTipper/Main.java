@@ -24,6 +24,7 @@ public final class Main extends JavaPlugin {
             new Balance(this);
             new Deposit(this);
             new Withdraw(this);
+            new Tip(this);
         } catch (SQLException ex) {
             sender.sendMessage(ChatColor.RED + "Error while initializing database and commands!");
             ex.printStackTrace(System.err);

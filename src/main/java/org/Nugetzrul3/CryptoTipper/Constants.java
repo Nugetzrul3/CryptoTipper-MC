@@ -15,7 +15,7 @@ public class Constants {
     public String coinName = "AdventureCoin";
     public int conf = 6;
     public String explorer = "https://explorer.adventurecoin.quest/#/transaction/";
-    public Double withdraw_fee = 0.5;
+    public Double withdraw_fee = 0.0005;
 
 
     // DB consts

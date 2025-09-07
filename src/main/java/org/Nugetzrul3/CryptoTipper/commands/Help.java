@@ -31,7 +31,7 @@ public class Help implements CommandExecutor {
             ChatColor.DARK_PURPLE + "2. /tip <username> <amount>: " + ChatColor.WHITE + "Tip's a certain amount of " + this.constants.ticker + " to another user\n" +
             ChatColor.DARK_PURPLE + "3. /deposit: " + ChatColor.WHITE + "Gives you a " + this.constants.ticker + " address to deposit " + this.constants.ticker + " to\n" +
             ChatColor.DARK_PURPLE + "4. /withdraw <amount> <" + this.constants.ticker + " address>: " + ChatColor.WHITE + "Withdraw a certain amount from your bot balance\n" +
-            "Note: A withdrawal fee of " + this.constants.withdraw_fee + " " + this.constants.ticker + " will be incurred per withdrawal" +
+            "Note: A withdrawal fee of " + this.constants.withdraw_fee + " " + this.constants.ticker + " will be incurred per withdrawal\n" +
             ChatColor.DARK_PURPLE + "5. /info: " + ChatColor.WHITE + "Returns general information on the " + this.constants.coinName + " blockchain\n" +
             ChatColor.DARK_PURPLE + "6. /balance: " + ChatColor.WHITE + "Returns your current account balance"
         );

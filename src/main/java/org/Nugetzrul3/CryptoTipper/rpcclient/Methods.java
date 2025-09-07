@@ -107,6 +107,19 @@ public class Methods {
 
     }
 
+    public CompletableFuture<JsonObject> move(String account1, String account2, Double amount) {
+        JsonArray params =  new JsonArray();
+        params.add(account1);
+        params.add(account2);
+        params.add(amount);
+
+        return this.client.sendRequest(
+            "move",
+            params
+        ).thenApply(response -> JsonParser.parseString(response.body()).getAsJsonObject());
+
+    }
+
     public CompletableFuture<JsonObject> withdraw(String address, Double amount, String uuid) {
         JsonArray params = new JsonArray();
         params.add(uuid);
