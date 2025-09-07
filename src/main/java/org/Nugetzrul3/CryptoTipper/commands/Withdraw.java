@@ -38,7 +38,6 @@ public class Withdraw implements CommandExecutor {
         }
     }
 
-    // TODO add withdraw confirmation functionality and add amount check
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Player player = (Player) sender;
@@ -67,8 +66,6 @@ public class Withdraw implements CommandExecutor {
                 return;
             }
 
-            System.out.println(Double.parseDouble(balResponse.get("confBal").getAsString()) + this.constants.withdraw_fee);
-            System.out.println(amount);
 
             if (Double.parseDouble(balResponse.get("confBal").getAsString()) < amount) {
                 Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
@@ -159,11 +156,12 @@ public class Withdraw implements CommandExecutor {
                                 return;
                             }
 
-                            String txid = response.get("result").getAsString();
+                            JsonObject withdrawResponse = response.get("result").getAsJsonObject();
+                            String txid = withdrawResponse.get("txid").getAsString();
                             TextComponent tc = new TextComponent();
 
                             tc.setText(
-                                ChatColor.GREEN + "TXID:  " + ChatColor.UNDERLINE + txid
+                                ChatColor.GREEN + "TXID: " + ChatColor.UNDERLINE + txid
                             );
                             tc.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, constants.explorer + txid));
                             tc.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,

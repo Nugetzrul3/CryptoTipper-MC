@@ -38,3 +38,27 @@ store user information.
 Once setup, simply copy the compiled jar file into the plugins folder and reload the server
 The plugin should now be enabled and running
 
+Functionality proof:
+
+
+![](imgs/info.png)
+
+![](imgs/help.png)
+
+![](imgs/deposit.png)
+
+![](imgs/balance.png)
+
+![](imgs/withdraw_help.png)
+
+![](imgs/withdraw.png)
+
+User 1 balance
+![](imgs/bal_before_tip.png)
+
+![](imgs/tip.png)
+
+![](imgs/tip_message.png)
+
+After tip
+![](imgs/bal_after_tip.png)
