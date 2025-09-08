@@ -2,6 +2,7 @@ package org.Nugetzrul3.CryptoTipper;
 
 import org.Nugetzrul3.CryptoTipper.commands.*;
 import org.Nugetzrul3.CryptoTipper.db.Database;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
@@ -25,6 +26,7 @@ public final class Main extends JavaPlugin {
             new Deposit(this);
             new Withdraw(this);
             new Tip(this);
+            Bukkit.getPluginManager().registerEvents(new SignListener(this), this);
         } catch (SQLException ex) {
             sender.sendMessage(ChatColor.RED + "Error while initializing database and commands!");
             ex.printStackTrace(System.err);
