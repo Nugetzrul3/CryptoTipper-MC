@@ -38,8 +38,7 @@ store user information.
 Once setup, simply copy the compiled jar file into the plugins folder and reload the server
 The plugin should now be enabled and running
 
-Functionality proof:
-
+## Showcase
 
 ![](imgs/info.png)
 
@@ -62,3 +61,35 @@ User 1 balance
 
 After tip
 ![](imgs/bal_after_tip.png)
+
+### Signs functionality
+Incorporating this plugin allows users to use signs! There are three commands that the signs can be used for:
+
+![](imgs/signs.png)
+
+- `/bal` -> Get the current user balance
+- `/pay <amount>` -> Pays the sign owner a specified amount
+- `/qwithdraw <amount>` -> Allows the sign owner to quickly withdraw a specified amount
+
+`/bal`
+![](imgs/bal_sign.png)
+<br>
+`/pay`
+![](imgs/pay.png)
+<br>
+![](imgs/pay_recieve.png)
+<br>
+`/qwithdraw`
+![](imgs/quick_withdraw_sign.png)
+
+### Sign ownership
+An important fundamentality of the signs is establishing ownership of who created the sign, who can edit the sign,
+who can destroy the sign etc. With this plugin, it is achieved by using the `PersistentDataContainer` of blocks,
+where the user ID of the sign creator is stored with the block and is persisted throughout the server, even if it
+goes offline. All signs created that inherit a command (such as `/bal`) can only be destroyed/edited by the owner,
+but depending on the command it can be used either by the owner or by everyone:
+
+- `/bal` -> Open to all users to use, however cannot be edited/destroyed by anyone. Only the owner
+- `/pay` -> Similarly, open to all users except the owner, to enforce that they cannot pay themselves. However, the
+owner can edit/destroy the sign
+- `/qwithdraw` -> This is only accessible to the owner
