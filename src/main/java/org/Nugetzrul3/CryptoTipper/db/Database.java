@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /// Class that holds database connection object.
-public final class Database {
+public class Database {
     private static Database instance;
     private DataSource dataSource;
     private final Constants constants = new Constants();
@@ -37,7 +37,7 @@ public final class Database {
                 Connection connection = getConnection();
                 Statement statement = connection.createStatement()
         ) {
-            String createScript = """
+            String createUserScript = """
                     CREATE TABLE IF NOT EXISTS users(
                         id SERIAL PRIMARY KEY,
                         uuid TEXT NOT NULL UNIQUE,
@@ -46,7 +46,22 @@ public final class Database {
                         withdraw_addr TEXT DEFAULT NULL
                     )
                     """;
-            statement.execute(createScript);
+            statement.execute(createUserScript);
+
+            String createWithdrawScript = """
+                    CREATE TABLE IF NOT EXISTS withdraws(
+                        id SERIAL PRIMARY KEY,
+                        txid TEXT UNIQUE,
+                        withdraw_addr TEXT,
+                        amount DECIMAL(20, 8),
+                        time DATE DEFAULT CURRENT_DATE,
+                        user_id INTEGER NOT NULL,
+                        FOREIGN KEY (user_id) REFERENCES users(id)
+                    )
+                    """;
+
+            statement.execute(createWithdrawScript);
+
         }
     }
 
