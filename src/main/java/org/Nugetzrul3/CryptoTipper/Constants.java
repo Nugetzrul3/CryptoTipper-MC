@@ -1,7 +1,5 @@
 package org.Nugetzrul3.CryptoTipper;
 
-import java.math.BigDecimal;
-
 /// Holds constants for RPC server and coin configurations
 public class Constants {
     // RPC Server consts
@@ -16,6 +14,8 @@ public class Constants {
     public int conf = 6;
     public String explorer = "https://explorer.adventurecoin.quest/#/transaction/";
     public Double withdraw_fee = 0.0005;
+    public Double withdraw_limit = 10.0;
+    public Double min_withdraw = 5.0;
 
 
     // DB consts
