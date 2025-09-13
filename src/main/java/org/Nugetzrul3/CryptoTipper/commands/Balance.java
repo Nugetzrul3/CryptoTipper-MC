@@ -47,7 +47,7 @@ public class Balance implements CommandExecutor {
             }
 
             Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your unconfirmed balance: " + response.get("unconfBal") + " " + constants.ticker + "\n"
+                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your unconfirmed balance: " + String.format("%.8f", response.get("unconfBal").getAsDouble() - response.get("confBal").getAsDouble()) + " " + constants.ticker + "\n"
                     + ChatColor.GREEN + ChatColor.BOLD + "Your confirmed balance: " + response.get("confBal") + " " + constants.ticker
             ));
 
