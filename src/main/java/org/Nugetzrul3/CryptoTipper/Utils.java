@@ -38,32 +38,34 @@ public class Utils {
     public static JsonObject calculateSupplyAndReward(int height) {
         JsonObject result = new JsonObject();
 
-        int halvings = 300_000;
-        BigDecimal reward = BigDecimal.valueOf(satoshis((int) (300 - (300 * 0.1))));
-        int halving_count = 0;
-        BigDecimal supply = reward;
+        final int HALVINGS_INTERVAL = 300_000;
+        BigDecimal reward = satoshis(270);
+        int halvingCount = 0;
+        BigDecimal supply = BigDecimal.ZERO;
 
-        while (height > halvings) {
-            BigDecimal total = BigDecimal.valueOf(halvings).multiply(supply);
-            reward = reward.divide(BigDecimal.valueOf(2), RoundingMode.HALF_UP);
-            height -= halvings;
-            halving_count += 1;
-
+        while (height > HALVINGS_INTERVAL) {
+            BigDecimal total = BigDecimal.valueOf(HALVINGS_INTERVAL).multiply(reward);
             supply = supply.add(total);
+
+            reward = reward.divide(BigDecimal.valueOf(2), RoundingMode.DOWN);
+            height -= HALVINGS_INTERVAL;
+            halvingCount++;
         }
 
         supply = supply.add(BigDecimal.valueOf(height).multiply(reward));
-        reward = reward.divide(BigDecimal.valueOf(Math.pow(10, 8)), RoundingMode.CEILING);
-        supply = supply.divide(BigDecimal.valueOf(Math.pow(10, 8)), RoundingMode.CEILING);
 
-        result.addProperty("halvings", halving_count);
-        result.addProperty("supply", supply.toPlainString());    // toPlainString() avoids scientific notation
-        result.addProperty("reward", reward.toPlainString());    // toPlainString() avoids scientific notation
+        BigDecimal divisor = BigDecimal.TEN.pow(8);
+        BigDecimal finalReward = reward.divide(divisor, 8, RoundingMode.DOWN);
+        BigDecimal finalSupply = supply.divide(divisor, 8, RoundingMode.DOWN);
+
+        result.addProperty("halvings", halvingCount);
+        result.addProperty("supply", finalSupply.toPlainString());
+        result.addProperty("reward", finalReward.toPlainString());
 
         return result;
     }
 
-    private static double satoshis(int value) {
-        return Math.ceil(value * Math.pow(10, 8));
+    private static BigDecimal satoshis(int value) {
+        return BigDecimal.valueOf(value).multiply(BigDecimal.TEN.pow(8));
     }
 }
