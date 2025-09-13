@@ -53,6 +53,8 @@ public class Utils {
         }
 
         supply = supply.add(BigDecimal.valueOf(height).multiply(reward));
+        reward = reward.divide(BigDecimal.valueOf(Math.pow(10, 8)), RoundingMode.CEILING);
+        supply = supply.divide(BigDecimal.valueOf(Math.pow(10, 8)), RoundingMode.CEILING);
 
         result.addProperty("halvings", halving_count);
         result.addProperty("supply", supply.toPlainString());    // toPlainString() avoids scientific notation

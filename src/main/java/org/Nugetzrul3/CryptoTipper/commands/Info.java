@@ -55,9 +55,9 @@ public class Info implements CommandExecutor {
                             ChatColor.GREEN + "Block height: " + blockHeight + "\n" +
                             ChatColor.GREEN + "Blockchain hashps: " + Utils.getHashFormat(resultJson.get("hashps").getAsFloat()) + "\n" +
                             ChatColor.GREEN + "Blockchain difficulty: " + resultJson.get("difficulty") + "\n" +
-                            ChatColor.GREEN + "Current block reward: " + supplyAndRewardJson.get("reward").getAsString() + "\n" +
+                            ChatColor.GREEN + "Current block reward: " + supplyAndRewardJson.get("reward").getAsString() + " " + this.constants.ticker + "\n" +
                             ChatColor.GREEN + "Number of halvings: " + supplyAndRewardJson.get("halvings") + "\n" +
-                            ChatColor.GREEN + "Current circulating supply: " + supplyAndRewardJson.get("supply").getAsString()
+                            ChatColor.GREEN + "Current circulating supply: " + supplyAndRewardJson.get("supply").getAsString()+ " " + this.constants.ticker
                     ));
                 });
 
