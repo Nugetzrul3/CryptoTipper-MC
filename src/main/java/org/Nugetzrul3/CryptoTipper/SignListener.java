@@ -10,10 +10,8 @@ import org.Nugetzrul3.CryptoTipper.db.UserRepository;
 import org.Nugetzrul3.CryptoTipper.db.WithdrawRepository;
 import org.Nugetzrul3.CryptoTipper.rpcclient.Methods;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.HangingSign;
-import org.bukkit.block.Sign;
+import org.bukkit.block.*;
+import org.bukkit.block.sign.Side;
 import org.bukkit.block.sign.SignSide;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -103,21 +101,24 @@ public class SignListener implements Listener {
     public void onSignDestroy(BlockBreakEvent event) {
         Block block = event.getBlock();
         BlockState state = block.getState();
-
-        if (!(state instanceof Sign sign) || state instanceof HangingSign) {
-            return;
-        }
-
         Player player = event.getPlayer();
-        PersistentDataContainer dc = sign.getPersistentDataContainer();
-        String owner = dc.get(ownerKey, PersistentDataType.STRING);
 
-        if (owner != null) {
-            if (!(owner.equals(player.getUniqueId().toString()))) {
-                event.setCancelled(true);
-                player.sendMessage(ChatColor.RED + "You can't destroy this sign!");
+        // Check if the broken block IS a sign
+        if (state instanceof Sign sign && !(state instanceof HangingSign)) {
+            PersistentDataContainer dc = sign.getPersistentDataContainer();
+            String owner = dc.get(ownerKey, PersistentDataType.STRING);
+
+            if (owner != null) {
+                if (!(owner.equals(player.getUniqueId().toString()))) {
+                    event.setCancelled(true);
+                    player.sendMessage(ChatColor.RED + "You can't destroy this sign!");
+                    return;
+                }
             }
         }
+
+        // Check if breaking this block would destroy any protected signs
+        checkForAttachedProtectedSigns(event, block, player);
     }
 
     @EventHandler
@@ -143,14 +144,36 @@ public class SignListener implements Listener {
         SignSide signSide = sign.getTargetSide(player);
         String[] lines = signSide.getLines();
 
+        // Get both sides to check for commands
+        SignSide frontSide = sign.getSide(Side.FRONT);
+        SignSide backSide = sign.getSide(Side.BACK);
+
+        String[] frontLines = frontSide.getLines();
+        String[] backLines = backSide.getLines();
+
         String owner = sign.getPersistentDataContainer()
             .get(ownerKey, PersistentDataType.STRING);
 
-        if (owner != null && lines.length > 0 && lines[0] != null &&
-            commands_arr.contains(lines[0].replace("§a", ""))) {
+        boolean currentSideHasCommand = lines.length > 0 && lines[0] != null &&
+            commands_arr.contains(lines[0].replace("§a", ""));
 
+        boolean otherSideHasCommand;
+        if (signSide == frontSide) {
+            otherSideHasCommand = backLines.length > 0 && backLines[0] != null &&
+                commands_arr.contains(backLines[0].replace("§a", ""));
+        } else {
+            otherSideHasCommand = frontLines.length > 0 && frontLines[0] != null &&
+                commands_arr.contains(frontLines[0].replace("§a", ""));
+        }
+
+        if (owner != null && otherSideHasCommand && !currentSideHasCommand) {
             event.setCancelled(true);
+            player.sendMessage(ChatColor.YELLOW + "This sign has a command on the other side! Walk around to use it.");
+            return;
+        }
 
+        if (owner != null && currentSideHasCommand) {
+            event.setCancelled(true);
             String command = lines[0].replace("§a", "");
             processSignCommand(sign, player, command, lines, owner);
         }
@@ -236,7 +259,7 @@ public class SignListener implements Listener {
             }
 
             Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your unconfirmed balance: " + response.get("unconfBal") + " " + constants.ticker + "\n"
+                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your unconfirmed balance: " + String.format("%.8f", response.get("unconfBal").getAsDouble() - response.get("confBal").getAsDouble()) + " " + constants.ticker + "\n"
                     + ChatColor.GREEN + ChatColor.BOLD + "Your confirmed balance: " + response.get("confBal") + " " + constants.ticker
             ));
         });
@@ -393,6 +416,58 @@ public class SignListener implements Listener {
                 });
             });
         });
+    }
+
+    // Helper methods
+    private void checkForAttachedProtectedSigns(BlockBreakEvent event, Block supportingBlock, Player player) {
+        // Get all blocks that might have signs attached to this block
+        Block[] adjacentBlocks = {
+            supportingBlock.getRelative(BlockFace.NORTH),
+            supportingBlock.getRelative(BlockFace.SOUTH),
+            supportingBlock.getRelative(BlockFace.EAST),
+            supportingBlock.getRelative(BlockFace.WEST),
+            supportingBlock.getRelative(BlockFace.UP)
+        };
+
+        for (Block adjacentBlock : adjacentBlocks) {
+            BlockState adjacentState = adjacentBlock.getState();
+
+            if (adjacentState instanceof Sign sign && !(adjacentState instanceof HangingSign)) {
+                if (isSignAttachedToBlock(sign, supportingBlock)) {
+                    PersistentDataContainer dc = sign.getPersistentDataContainer();
+                    String owner = dc.get(ownerKey, PersistentDataType.STRING);
+
+                    if (owner != null && !owner.equals(player.getUniqueId().toString())) {
+                        event.setCancelled(true);
+                        player.sendMessage(ChatColor.RED + "You can't destroy this block! It would destroy a protected sign.");
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean isSignAttachedToBlock(Sign sign, Block supportingBlock) {
+        Block signBlock = sign.getBlock();
+        Material signType = signBlock.getType();
+
+        if (signType == Material.OAK_SIGN || signType == Material.BIRCH_SIGN ||
+            signType == Material.SPRUCE_SIGN || signType == Material.JUNGLE_SIGN ||
+            signType == Material.ACACIA_SIGN || signType == Material.DARK_OAK_SIGN ||
+            signType == Material.CRIMSON_SIGN || signType == Material.WARPED_SIGN ||
+            signType == Material.MANGROVE_SIGN || signType == Material.BAMBOO_SIGN ||
+            signType == Material.CHERRY_SIGN) {
+
+            return signBlock.getRelative(BlockFace.DOWN).equals(supportingBlock);
+        }
+
+        if (signType.toString().contains("WALL_SIGN")) {
+            org.bukkit.block.data.type.WallSign wallSign = (org.bukkit.block.data.type.WallSign) signBlock.getBlockData();
+            BlockFace attachedFace = wallSign.getFacing().getOppositeFace();
+            return signBlock.getRelative(attachedFace).equals(supportingBlock);
+        }
+
+        return false;
     }
 
 }
