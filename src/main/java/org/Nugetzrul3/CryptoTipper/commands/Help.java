@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import java.math.BigDecimal;
 
 public class Help implements CommandExecutor {
     private final Constants constants;
@@ -31,7 +32,7 @@ public class Help implements CommandExecutor {
             ChatColor.DARK_PURPLE + "2. /tip <username> <amount>: " + ChatColor.WHITE + "Tip's a certain amount of " + this.constants.ticker + " to another user\n" +
             ChatColor.DARK_PURPLE + "3. /deposit: " + ChatColor.WHITE + "Gives you a " + this.constants.ticker + " address to deposit " + this.constants.ticker + " to\n" +
             ChatColor.DARK_PURPLE + "4. /withdraw <amount> <" + this.constants.ticker + " address>: " + ChatColor.WHITE + "Withdraw a certain amount from your bot balance\n" +
-            "Note: A withdrawal fee of " + this.constants.withdraw_fee + " " + this.constants.ticker + " will be incurred per withdrawal\n" +
+            "Note: A withdrawal fee of " + BigDecimal.valueOf(this.constants.withdraw_fee).toPlainString() + " " + this.constants.ticker + " will be incurred per withdrawal\n" +
             ChatColor.DARK_PURPLE + "5. /info: " + ChatColor.WHITE + "Returns general information on the " + this.constants.coinName + " blockchain\n" +
             ChatColor.DARK_PURPLE + "6. /balance: " + ChatColor.WHITE + "Returns your current account balance"
         );

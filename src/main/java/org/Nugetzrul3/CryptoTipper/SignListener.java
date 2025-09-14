@@ -14,6 +14,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.HangingSign;
 import org.bukkit.block.Sign;
+import org.bukkit.block.sign.Side;
 import org.bukkit.block.sign.SignSide;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -143,14 +144,42 @@ public class SignListener implements Listener {
         SignSide signSide = sign.getTargetSide(player);
         String[] lines = signSide.getLines();
 
+        // Get both sides to check for commands
+        SignSide frontSide = sign.getSide(Side.FRONT);
+        SignSide backSide = sign.getSide(Side.BACK);
+
+        String[] frontLines = frontSide.getLines();
+        String[] backLines = backSide.getLines();
+
         String owner = sign.getPersistentDataContainer()
             .get(ownerKey, PersistentDataType.STRING);
 
-        if (owner != null && lines.length > 0 && lines[0] != null &&
-            commands_arr.contains(lines[0].replace("§a", ""))) {
+        // Check if current side has a command
+        boolean currentSideHasCommand = lines.length > 0 && lines[0] != null &&
+            commands_arr.contains(lines[0].replace("§a", ""));
 
+        // Check if other side has a command
+        boolean otherSideHasCommand = false;
+        if (signSide == frontSide) {
+            // Player is looking at front, check back
+            otherSideHasCommand = backLines.length > 0 && backLines[0] != null &&
+                commands_arr.contains(backLines[0].replace("§a", ""));
+        } else {
+            // Player is looking at back, check front
+            otherSideHasCommand = frontLines.length > 0 && frontLines[0] != null &&
+                commands_arr.contains(frontLines[0].replace("§a", ""));
+        }
+
+        // If this is a command sign (owner exists) but player clicked the wrong side
+        if (owner != null && otherSideHasCommand && !currentSideHasCommand) {
             event.setCancelled(true);
+            player.sendMessage(ChatColor.YELLOW + "This sign has a command on the other side! Walk around to use it.");
+            return;
+        }
 
+        // If current side has a command, process it normally
+        if (owner != null && currentSideHasCommand) {
+            event.setCancelled(true);
             String command = lines[0].replace("§a", "");
             processSignCommand(sign, player, command, lines, owner);
         }
@@ -236,7 +265,7 @@ public class SignListener implements Listener {
             }
 
             Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your unconfirmed balance: " + response.get("unconfBal") + " " + constants.ticker + "\n"
+                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your unconfirmed balance: " + String.format("%.8f", response.get("unconfBal").getAsDouble() - response.get("confBal").getAsDouble()) + " " + constants.ticker + "\n"
                     + ChatColor.GREEN + ChatColor.BOLD + "Your confirmed balance: " + response.get("confBal") + " " + constants.ticker
             ));
         });
