@@ -21,14 +21,12 @@ import org.jetbrains.annotations.NotNull;
 public class Deposit implements CommandExecutor {
     private final JavaPlugin plugin;
     private final Methods methods;
-    private final Constants constants;
     private final UserRepository userRepository;
 
     public Deposit(JavaPlugin plugin) {
         if (plugin.getDescription().getCommands().containsKey("deposit")) {
             plugin.getCommand("deposit").setExecutor(new CommandWrapper(this, plugin));
             this.plugin = plugin;
-            this.constants = new Constants();
             this.methods = new Methods();
             this.userRepository = new UserRepository();
         } else {
@@ -61,7 +59,7 @@ public class Deposit implements CommandExecutor {
 
                         // Build and send the TextComponent on the main thread
                         TextComponent tc = new TextComponent();
-                        tc.setText(ChatColor.GREEN + "Your " + constants.ticker + " deposit address: " +
+                        tc.setText(ChatColor.GREEN + "Your " + Constants.ticker + " deposit address: " +
                             ChatColor.LIGHT_PURPLE + newAddress + ". " + ChatColor.UNDERLINE + "Click to copy");
                         tc.setClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, newAddress));
                         tc.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
@@ -73,7 +71,7 @@ public class Deposit implements CommandExecutor {
                 // Use DB value
                 String dbAddress = user.address();
                 TextComponent tc = new TextComponent();
-                tc.setText(ChatColor.GREEN + "Your " + constants.ticker + " deposit address: " +
+                tc.setText(ChatColor.GREEN + "Your " + Constants.ticker + " deposit address: " +
                     ChatColor.LIGHT_PURPLE + dbAddress + ". " + ChatColor.UNDERLINE + "Click to copy");
                 tc.setClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, dbAddress));
                 tc.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,

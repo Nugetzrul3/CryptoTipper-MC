@@ -9,11 +9,9 @@ import java.util.concurrent.CompletableFuture;
 /// Contains RPC methods that are used throughout the tip plugin
 public class Methods {
     private final Client client;
-    private final Constants constants;
 
     public Methods() {
         this.client = new Client();
-        this.constants = new Constants();
     }
 
     public CompletableFuture<JsonObject> getBlockchainInfo() {
@@ -41,6 +39,7 @@ public class Methods {
         });
     }
 
+    // to be removed
     public CompletableFuture<JsonObject> getUserBalance(String uuid) {
         JsonArray params =  new JsonArray();
         params.add(uuid);
@@ -51,9 +50,8 @@ public class Methods {
             params
         );
 
-        Constants constants = new Constants();
         params.remove(1);
-        params.add(constants.conf);
+        params.add(Constants.conf);
 
         CompletableFuture<HttpResponse<String>> userBalanceConfirmed = this.client.sendRequest(
             "getbalance",
@@ -91,7 +89,7 @@ public class Methods {
         params.add(uuid);
 
         return this.client.sendRequest(
-            "getaccountaddress",
+            "getnewaddress",
             params
         ).thenApply(response -> JsonParser.parseString(response.body()).getAsJsonObject());
     }
@@ -107,6 +105,7 @@ public class Methods {
 
     }
 
+    // to be removed
     public CompletableFuture<JsonObject> move(String account1, String account2, Double amount) {
         JsonArray params =  new JsonArray();
         params.add(account1);
@@ -120,13 +119,14 @@ public class Methods {
 
     }
 
+    // to be removed
     public CompletableFuture<JsonObject> withdraw(String address, Double amount, String uuid) {
         JsonArray params = new JsonArray();
         params.add(uuid);
         params.add(address);
         params.add(amount);
 
-        Double withdrawalFee = this.constants.withdraw_fee;
+        Double withdrawalFee = Constants.withdraw_fee;
 
         return this.client.sendRequest("sendfrom", params)
             .thenApply(response -> JsonParser.parseString(response.body()).getAsJsonObject())
@@ -157,6 +157,7 @@ public class Methods {
             });
     }
 
+    // to be removed
     private CompletableFuture<JsonObject> getTransactionDetails(String txid) {
         JsonArray txParams = new JsonArray();
         txParams.add(txid);
@@ -171,6 +172,7 @@ public class Methods {
             });
     }
 
+    // to be removed
     private CompletableFuture<JsonObject> chargeFees(String uuid, JsonObject txDetails, Double withdrawalFee) {
         Double txFee = txDetails.get("fee").getAsDouble();
 

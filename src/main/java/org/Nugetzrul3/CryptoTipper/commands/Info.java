@@ -18,13 +18,11 @@ import org.jetbrains.annotations.NotNull;
 public class Info implements CommandExecutor {
     private final Methods methods;
     private final JavaPlugin plugin;
-    private final Constants constants;
 
     public Info(JavaPlugin plugin) {
         if (plugin.getDescription().getCommands().containsKey("info")) {
             plugin.getCommand("info").setExecutor(new CommandWrapper(this, plugin));
             this.plugin = plugin;
-            this.constants = new Constants();
             this.methods = new Methods();
         } else {
             throw new Error("Info command not found!");
@@ -51,13 +49,13 @@ public class Info implements CommandExecutor {
                     JsonObject supplyAndRewardJson = Utils.calculateSupplyAndReward(blockHeight);
                     // Run on the main server thread
                     Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                            ChatColor.AQUA + ChatColor.BOLD.toString() + constants.ticker + " Blockchain info: \n" +
+                            ChatColor.AQUA + ChatColor.BOLD.toString() + Constants.ticker + " Blockchain info: \n" +
                             ChatColor.GREEN + "Block height: " + blockHeight + "\n" +
                             ChatColor.GREEN + "Blockchain hashps: " + Utils.getHashFormat(resultJson.get("hashps").getAsFloat()) + "\n" +
                             ChatColor.GREEN + "Blockchain difficulty: " + resultJson.get("difficulty") + "\n" +
-                            ChatColor.GREEN + "Current block reward: " + supplyAndRewardJson.get("reward").getAsString() + " " + this.constants.ticker + "\n" +
+                            ChatColor.GREEN + "Current block reward: " + supplyAndRewardJson.get("reward").getAsString() + " " + Constants.ticker + "\n" +
                             ChatColor.GREEN + "Number of halvings: " + supplyAndRewardJson.get("halvings") + "\n" +
-                            ChatColor.GREEN + "Current circulating supply: " + supplyAndRewardJson.get("supply").getAsString()+ " " + this.constants.ticker
+                            ChatColor.GREEN + "Current circulating supply: " + supplyAndRewardJson.get("supply").getAsString()+ " " + Constants.ticker
                     ));
                 });
 

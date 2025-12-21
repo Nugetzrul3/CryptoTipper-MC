@@ -12,7 +12,6 @@ import java.sql.Statement;
 public class Database {
     private static Database instance;
     private DataSource dataSource;
-    private final Constants constants = new Constants();
 
     private Database() {
     }
@@ -28,9 +27,9 @@ public class Database {
     /// Initialise connection.
     public void initDb() throws SQLException {
         PGSimpleDataSource ds =  new PGSimpleDataSource();
-        String postgresUrl = "jdbc:postgresql://" + constants.dbHost + ":" + constants.dbPort + "/CryptoTipper";
-        ds.setUser(constants.dbUser);
-        ds.setPassword(constants.dbPass);
+        String postgresUrl = "jdbc:postgresql://" + Constants.dbHost + ":" + Constants.dbPort + "/CryptoTipper";
+        ds.setUser(Constants.dbUser);
+        ds.setPassword(Constants.dbPass);
         ds.setUrl(postgresUrl);
         this.dataSource = ds;
         try (
@@ -56,6 +55,7 @@ public class Database {
                         amount DECIMAL(20, 8),
                         time DATE DEFAULT CURRENT_DATE,
                         user_id INTEGER NOT NULL,
+                        withdrawn BOOLEAN DEFAULT FALSE
                         FOREIGN KEY (user_id) REFERENCES users(id)
                     )
                     """;

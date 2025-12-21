@@ -22,14 +22,12 @@ import java.util.UUID;
 public class Tip implements CommandExecutor {
     private final Methods methods;
     private final JavaPlugin plugin;
-    private final Constants constants;
     private final UserRepository userRepository;
 
     public Tip(JavaPlugin plugin) {
         if (plugin.getDescription().getCommands().containsKey("tip")) {
             plugin.getCommand("tip").setExecutor(new CommandWrapper(this, plugin));
             this.plugin = plugin;
-            this.constants = new Constants();
             this.methods = new Methods();
             this.userRepository = new UserRepository();
         } else {
@@ -66,9 +64,9 @@ public class Tip implements CommandExecutor {
 
             if (balResponse.get("confBal").getAsDouble() < amount) {
                 Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                    ChatColor.RED + "That amount exceeds how much " + this.constants.ticker + " you have\n"
+                    ChatColor.RED + "That amount exceeds how much " + Constants.ticker + " you have\n"
                         + ChatColor.WHITE + "You're current balance: " + ChatColor.GREEN + balResponse.get("confBal").getAsString()
-                        + " " + this.constants.ticker
+                        + " " + Constants.ticker
                 ));
                 return;
             }
@@ -112,14 +110,14 @@ public class Tip implements CommandExecutor {
 
                        Bukkit.getScheduler().runTask(plugin, () -> {
                            player.sendMessage(
-                               ChatColor.GREEN + "Success! Tipped " + receiverUsername + " " + BigDecimal.valueOf(amount).toPlainString() + " " + this.constants.ticker + "\n"
+                               ChatColor.GREEN + "Success! Tipped " + receiverUsername + " " + BigDecimal.valueOf(amount).toPlainString() + " " + Constants.ticker + "\n"
                                    + ChatColor.WHITE + "They will also be notified of the tip if they are online :)"
                            );
 
                            if (receiver.isOnline()) {
                                Player recieverPlayer = receiver.getPlayer();
                                recieverPlayer.sendMessage(
-                                   ChatColor.GREEN + "Hey! " + player.getName() + " just tipped you " + BigDecimal.valueOf(amount).toPlainString() + " " + this.constants.ticker + "\n"
+                                   ChatColor.GREEN + "Hey! " + player.getName() + " just tipped you " + BigDecimal.valueOf(amount).toPlainString() + " " + Constants.ticker + "\n"
                                        + ChatColor.WHITE + ChatColor.BOLD + "Be sure to thank them!"
                                );
                            }

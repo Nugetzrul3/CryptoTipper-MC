@@ -34,7 +34,6 @@ public class SignListener implements Listener {
         "/qwithdraw",
         "/bal"
     });
-    private final Constants constants;
     private final Methods methods;
     private final UserRepository userRepository;
     private final WithdrawRepository withdrawRepository;
@@ -43,7 +42,6 @@ public class SignListener implements Listener {
 
 
     public SignListener(JavaPlugin plugin) {
-        this.constants = new Constants();
         this.methods = new Methods();
         this.userRepository = new UserRepository();
         this.withdrawRepository = new WithdrawRepository();
@@ -259,8 +257,8 @@ public class SignListener implements Listener {
             }
 
             Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your unconfirmed balance: " + String.format("%.8f", response.get("unconfBal").getAsDouble() - response.get("confBal").getAsDouble()) + " " + constants.ticker + "\n"
-                    + ChatColor.GREEN + ChatColor.BOLD + "Your confirmed balance: " + response.get("confBal") + " " + constants.ticker
+                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your unconfirmed balance: " + String.format("%.8f", response.get("unconfBal").getAsDouble() - response.get("confBal").getAsDouble()) + " " + Constants.ticker + "\n"
+                    + ChatColor.GREEN + ChatColor.BOLD + "Your confirmed balance: " + response.get("confBal") + " " + Constants.ticker
             ));
         });
 
@@ -280,9 +278,9 @@ public class SignListener implements Listener {
 
             if (balResponse.get("confBal").getAsDouble() < Double.parseDouble(amount)) {
                 Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                    ChatColor.RED + "That amount exceeds how much " + this.constants.ticker + " you have\n"
+                    ChatColor.RED + "That amount exceeds how much " + Constants.ticker + " you have\n"
                         + ChatColor.WHITE + "You're current balance: " + ChatColor.GREEN + balResponse.get("confBal").getAsString()
-                        + " " + this.constants.ticker
+                        + " " + Constants.ticker
                 ));
                 return;
             }
@@ -305,14 +303,14 @@ public class SignListener implements Listener {
 
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     player.sendMessage(
-                        ChatColor.GREEN + "Success! Paid " + receiver.getName() + " " + amount + " " + constants.ticker + "\n"
+                        ChatColor.GREEN + "Success! Paid " + receiver.getName() + " " + amount + " " + Constants.ticker + "\n"
                     );
 
                     if (receiver.isOnline()) {
                         Player receiverPlayer = receiver.getPlayer();
                         if (receiverPlayer != null) {
                             receiverPlayer.sendMessage(
-                                ChatColor.GREEN + player.getName() + " has paid " + amount + " " + constants.ticker + "\n"
+                                ChatColor.GREEN + player.getName() + " has paid " + amount + " " + Constants.ticker + "\n"
                             );
                         }
                     }
@@ -325,8 +323,8 @@ public class SignListener implements Listener {
     private void handleQuickWithdrawCommand(Player player, String amount) {
         double reqAmount = Double.parseDouble(amount);
 
-        if (reqAmount < this.constants.min_withdraw) {
-            player.sendMessage(ChatColor.RED + "The minimum withdrawal amount is " + this.constants.min_withdraw + " " + this.constants.ticker + "!");
+        if (reqAmount < Constants.min_withdraw) {
+            player.sendMessage(ChatColor.RED + "The minimum withdrawal amount is " + Constants.min_withdraw + " " + Constants.ticker + "!");
             return;
         }
 
@@ -334,9 +332,9 @@ public class SignListener implements Listener {
             player.getUniqueId().toString(),
             new Date(System.currentTimeMillis())
         ).thenAccept(currWithdrawAmount -> {
-            if (currWithdrawAmount >= this.constants.withdraw_limit) {
+            if (currWithdrawAmount >= Constants.withdraw_limit) {
                 Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                    ChatColor.RED + "You have hit your withdrawal limit of " + this.constants.withdraw_limit + " " + this.constants.ticker + "\n"
+                    ChatColor.RED + "You have hit your withdrawal limit of " + Constants.withdraw_limit + " " + Constants.ticker + "\n"
                         + ChatColor.GREEN + "Please wait till the next day to withdraw more :)"
                 ));
                 return;
@@ -355,13 +353,13 @@ public class SignListener implements Listener {
 
                 if (Double.parseDouble(balResponse.get("confBal").getAsString()) < reqAmount) {
                     Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                        ChatColor.RED + "That amount exceeds how much " + this.constants.ticker + " you have\n"
+                        ChatColor.RED + "That amount exceeds how much " + Constants.ticker + " you have\n"
                             + ChatColor.WHITE + "You're current balance: " + ChatColor.GREEN + balResponse.get("confBal").getAsString()
-                            + " " + this.constants.ticker
+                            + " " + Constants.ticker
                     ));
                     return;
                 }
-                double sendAmount = reqAmount - this.constants.withdraw_fee;
+                double sendAmount = reqAmount - Constants.withdraw_fee;
 
                 this.userRepository.getUserByUuid(
                     player.getUniqueId().toString()
@@ -399,15 +397,15 @@ public class SignListener implements Listener {
                         tc.setText(
                             ChatColor.GREEN + "TXID:  " + ChatColor.UNDERLINE + txid
                         );
-                        tc.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, constants.explorer + txid));
+                        tc.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Constants.explorer + txid));
                         tc.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             new Text(ChatColor.GRAY + "Click to copy to open transaction")));
 
                         Bukkit.getScheduler().runTask(plugin, () -> {
                             player.sendMessage(
-                                ChatColor.GREEN + "Success! Withdrew " + amount + " " + constants.ticker + "\n"
+                                ChatColor.GREEN + "Success! Withdrew " + amount + " " + Constants.ticker + "\n"
                                     + ChatColor.GRAY + "Note: Transaction may not be reflected on explorer yet. But \n"
-                                    + "rest assured, you're " + constants.ticker + " has been sent"
+                                    + "rest assured, you're " + Constants.ticker + " has been sent"
                             );
                             player.spigot().sendMessage(tc);
                         });

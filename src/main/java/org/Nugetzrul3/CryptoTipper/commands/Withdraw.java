@@ -25,7 +25,6 @@ import java.sql.Date;
 public class Withdraw implements CommandExecutor {
     private final JavaPlugin plugin;
     private final Methods methods;
-    private final Constants constants;
     private final UserRepository userRepository;
     private final WithdrawRepository withdrawRepository;
 
@@ -34,7 +33,6 @@ public class Withdraw implements CommandExecutor {
             plugin.getCommand("withdraw").setExecutor(new CommandWrapper(this, plugin));
             this.plugin = plugin;
             this.methods = new Methods();
-            this.constants = new Constants();
             this.userRepository = new UserRepository();
             this.withdrawRepository = new WithdrawRepository();
         } else {
@@ -59,8 +57,8 @@ public class Withdraw implements CommandExecutor {
 
         double amount = Double.parseDouble(args[0]);
 
-        if (amount < this.constants.min_withdraw) {
-            player.sendMessage(ChatColor.RED + "The minimum withdrawal amount is 10 " + this.constants.ticker + "!");
+        if (amount < Constants.min_withdraw) {
+            player.sendMessage(ChatColor.RED + "The minimum withdrawal amount is 10 " + Constants.ticker + "!");
             return false;
         }
 
@@ -68,9 +66,9 @@ public class Withdraw implements CommandExecutor {
             player.getUniqueId().toString(),
             new Date(System.currentTimeMillis())
         ).thenAccept(currWithdrawAmount -> {
-           if (currWithdrawAmount >= this.constants.withdraw_limit) {
+           if (currWithdrawAmount >= Constants.withdraw_limit) {
                Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                   ChatColor.RED + "You have hit your withdrawal limit of " + this.constants.withdraw_limit + " " + this.constants.ticker + "\n"
+                   ChatColor.RED + "You have hit your withdrawal limit of " + Constants.withdraw_limit + " " + Constants.ticker + "\n"
                    + ChatColor.GREEN + "Please wait till the next day to withdraw more :)"
                ));
                return;
@@ -90,14 +88,14 @@ public class Withdraw implements CommandExecutor {
 
                 if (Double.parseDouble(balResponse.get("confBal").getAsString()) < amount) {
                     Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                        ChatColor.RED + "That amount exceeds how much " + this.constants.ticker + " you have\n"
+                        ChatColor.RED + "That amount exceeds how much " + Constants.ticker + " you have\n"
                             + ChatColor.WHITE + "You're current balance: " + ChatColor.GREEN + balResponse.get("confBal").getAsString()
-                            + " " + this.constants.ticker
+                            + " " + Constants.ticker
                     ));
                     return;
                 }
 
-                Double sendAmount = amount - this.constants.withdraw_fee;
+                Double sendAmount = amount - Constants.withdraw_fee;
 
                 // Use last known address
                 if (args.length == 1) {
@@ -137,15 +135,15 @@ public class Withdraw implements CommandExecutor {
                             tc.setText(
                                 ChatColor.GREEN + "TXID:  " + ChatColor.UNDERLINE + txid
                             );
-                            tc.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, constants.explorer + txid));
+                            tc.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Constants.explorer + txid));
                             tc.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                                 new Text(ChatColor.GRAY + "Click to copy to open transaction")));
 
                             Bukkit.getScheduler().runTask(plugin, () -> {
                                 player.sendMessage(
-                                    ChatColor.GREEN + "Success! Withdrew " + amount + " " + constants.ticker + "\n"
+                                    ChatColor.GREEN + "Success! Withdrew " + amount + " " + Constants.ticker + "\n"
                                         + ChatColor.GRAY + "Note: Transaction may not be reflected on explorer yet. But \n"
-                                        + "rest assured, you're " + constants.ticker + " has been sent"
+                                        + "rest assured, you're " + Constants.ticker + " has been sent"
                                 );
                                 player.spigot().sendMessage(tc);
                             });
@@ -200,15 +198,15 @@ public class Withdraw implements CommandExecutor {
                                 tc.setText(
                                     ChatColor.GREEN + "TXID: " + ChatColor.UNDERLINE + txid
                                 );
-                                tc.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, constants.explorer + txid));
+                                tc.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Constants.explorer + txid));
                                 tc.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                                     new Text(ChatColor.GRAY + "Click to copy to open transaction")));
 
                                 Bukkit.getScheduler().runTask(plugin, () -> {
                                     player.sendMessage(
-                                        ChatColor.GREEN + "Success! Withdrew " + amount + " " + constants.ticker + "\n"
+                                        ChatColor.GREEN + "Success! Withdrew " + amount + " " + Constants.ticker + "\n"
                                             + ChatColor.GRAY + "Note: Transaction may not be reflected on explorer yet. But \n"
-                                            + "rest assured, you're " + constants.ticker + " has been sent"
+                                            + "rest assured, you're " + Constants.ticker + " has been sent"
                                     );
                                     player.spigot().sendMessage(tc);
                                 });

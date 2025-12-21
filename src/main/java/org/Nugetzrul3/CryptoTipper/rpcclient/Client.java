@@ -14,11 +14,9 @@ import java.util.concurrent.CompletableFuture;
 
 public class Client {
     private final HttpClient client;
-    private final Constants constants;
 
     public Client() {
         client = HttpClient.newHttpClient();
-        constants = new Constants();
     }
 
     public CompletableFuture<HttpResponse<String>> sendRequest(String method) {
@@ -28,11 +26,11 @@ public class Client {
         jsonObject.addProperty("id", "crypto-tipper");
 
         String requestBody = jsonObject.toString();
-        String auth = constants.rpcuser + ":" + constants.rpcpass;
+        String auth = Constants.rpcuser + ":" + Constants.rpcpass;
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
 
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(String.format("http://%s:%d", constants.rpchost, constants.rpcport)))
+            .uri(URI.create(String.format("http://%s:%d", Constants.rpchost, Constants.rpcport)))
             .header("Authorization", "Basic " + encodedAuth)
             .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(requestBody))
@@ -48,11 +46,11 @@ public class Client {
         jsonObject.add("params", params);
 
         String requestBody = jsonObject.toString();
-        String auth = constants.rpcuser + ":" + constants.rpcpass;
+        String auth = Constants.rpcuser + ":" + Constants.rpcpass;
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
 
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(String.format("http://@%s:%d", constants.rpchost, constants.rpcport)))
+            .uri(URI.create(String.format("http://@%s:%d", Constants.rpchost, Constants.rpcport)))
             .header("Authorization", "Basic " + encodedAuth)
             .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(requestBody))

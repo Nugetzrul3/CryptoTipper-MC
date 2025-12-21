@@ -16,14 +16,12 @@ import org.jetbrains.annotations.NotNull;
 public class Balance implements CommandExecutor {
     private final Methods methods;
     private final JavaPlugin plugin;
-    private final Constants constants;
 
     public Balance(JavaPlugin plugin) {
         if (plugin.getDescription().getCommands().containsKey("balance")) {
             plugin.getCommand("balance").setExecutor(new CommandWrapper(this, plugin));
             this.plugin = plugin;
             this.methods = new Methods();
-            this.constants = new Constants();
         } else {
             throw new Error("Balance command not found!");
         }
@@ -47,8 +45,8 @@ public class Balance implements CommandExecutor {
             }
 
             Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your unconfirmed balance: " + String.format("%.8f", response.get("unconfBal").getAsDouble() - response.get("confBal").getAsDouble()) + " " + constants.ticker + "\n"
-                    + ChatColor.GREEN + ChatColor.BOLD + "Your confirmed balance: " + response.get("confBal") + " " + constants.ticker
+                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your unconfirmed balance: " + String.format("%.8f", response.get("unconfBal").getAsDouble() - response.get("confBal").getAsDouble()) + " " + Constants.ticker + "\n"
+                    + ChatColor.GREEN + ChatColor.BOLD + "Your confirmed balance: " + response.get("confBal") + " " + Constants.ticker
             ));
 
         });
