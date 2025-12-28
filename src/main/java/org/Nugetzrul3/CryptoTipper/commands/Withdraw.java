@@ -43,6 +43,7 @@ public class Withdraw implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Player player = (Player) sender;
+        String account = player.getUniqueId().toString();
 
         if (args.length == 0 || args.length > 2) {
             player.sendMessage(ChatColor.RED + "Usage: /withdraw <amount> <address (optional)> \n"
@@ -63,7 +64,7 @@ public class Withdraw implements CommandExecutor {
         }
 
         this.withdrawRepository.getCurrentWithdrawAmount(
-            player.getUniqueId().toString(),
+            account,
             new Date(System.currentTimeMillis())
         ).thenAccept(currWithdrawAmount -> {
            if (currWithdrawAmount >= Constants.withdraw_limit) {
@@ -74,22 +75,13 @@ public class Withdraw implements CommandExecutor {
                return;
            }
 
-            this.methods.getUserBalance(
-                player.getUniqueId().toString()
-            ).thenAccept(balResponse -> {
-                if (!(balResponse.get("error") instanceof JsonNull)) {
-                    Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                        ChatColor.RED + "Error processing withdrawal! Contact admins and show them this: \n" +
-                            "Error: " + balResponse.get("error").toString()
-                    ));
-                    return;
-                }
-
-
-                if (Double.parseDouble(balResponse.get("confBal").getAsString()) < amount) {
+            this.userRepository.getUserByUuid(
+                account
+            ).thenAccept(user -> {
+                if (user.balance() < amount) {
                     Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
                         ChatColor.RED + "That amount exceeds how much " + Constants.ticker + " you have\n"
-                            + ChatColor.WHITE + "You're current balance: " + ChatColor.GREEN + balResponse.get("confBal").getAsString()
+                            + ChatColor.WHITE + "You're current balance: " + ChatColor.GREEN + String.format("%.8f", user.balance())
                             + " " + Constants.ticker
                     ));
                     return;
@@ -99,56 +91,52 @@ public class Withdraw implements CommandExecutor {
 
                 // Use last known address
                 if (args.length == 1) {
-                    this.userRepository.getUserByUuid(
+                    if (user.withdraw_addr() == null || user.withdraw_addr().isEmpty() || user.withdraw_addr().equals("null")) {
+                        Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(ChatColor.RED + "You don't have a previous withdrawal address! Please supply one."));
+                        return;
+                    }
+
+                    this.methods.withdraw(
+                        user.withdraw_addr(),
+                        sendAmount,
                         player.getUniqueId().toString()
-                    ).thenAccept(user -> {
-                        if (user.withdraw_addr() == null || user.withdraw_addr().isEmpty() || user.withdraw_addr().equals("null")) {
-                            Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(ChatColor.RED + "You don't have a previous withdrawal address! Please supply one."));
+                    ).thenAccept(response -> {
+                        if (!(response.get("error") instanceof JsonNull)) {
+                            Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
+                                ChatColor.RED + "Error processing withdrawal! Contact admins and show them this: \n" +
+                                    "Error: " + response.get("error").toString()
+                            ));
                             return;
                         }
 
-                        this.methods.withdraw(
+                        JsonObject withdrawResponse = response.get("result").getAsJsonObject();
+                        String txid = withdrawResponse.get("txid").getAsString();
+
+                        this.withdrawRepository.insertWithdraw(
+                            txid,
                             user.withdraw_addr(),
-                            sendAmount,
-                            player.getUniqueId().toString()
-                        ).thenAccept(response -> {
-                            if (!(response.get("error") instanceof JsonNull)) {
-                                Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                                    ChatColor.RED + "Error processing withdrawal! Contact admins and show them this: \n" +
-                                        "Error: " + response.get("error").toString()
-                                ));
-                                return;
-                            }
+                            amount,
+                            user.id()
+                        );
 
-                            JsonObject withdrawResponse = response.get("result").getAsJsonObject();
-                            String txid = withdrawResponse.get("txid").getAsString();
+                        TextComponent tc = new TextComponent();
 
-                            this.withdrawRepository.insertWithdraw(
-                                txid,
-                                user.withdraw_addr(),
-                                amount,
-                                user.id()
+                        tc.setText(
+                            ChatColor.GREEN + "TXID:  " + ChatColor.UNDERLINE + txid
+                        );
+                        tc.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Constants.explorer + txid));
+                        tc.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                            new Text(ChatColor.GRAY + "Click to copy to open transaction")));
+
+                        Bukkit.getScheduler().runTask(plugin, () -> {
+                            player.sendMessage(
+                                ChatColor.GREEN + "Success! Withdrew " + amount + " " + Constants.ticker + "\n"
+                                    + ChatColor.GRAY + "Note: Transaction may not be reflected on explorer yet. But \n"
+                                    + "rest assured, you're " + Constants.ticker + " has been sent"
                             );
-
-                            TextComponent tc = new TextComponent();
-
-                            tc.setText(
-                                ChatColor.GREEN + "TXID:  " + ChatColor.UNDERLINE + txid
-                            );
-                            tc.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Constants.explorer + txid));
-                            tc.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                new Text(ChatColor.GRAY + "Click to copy to open transaction")));
-
-                            Bukkit.getScheduler().runTask(plugin, () -> {
-                                player.sendMessage(
-                                    ChatColor.GREEN + "Success! Withdrew " + amount + " " + Constants.ticker + "\n"
-                                        + ChatColor.GRAY + "Note: Transaction may not be reflected on explorer yet. But \n"
-                                        + "rest assured, you're " + Constants.ticker + " has been sent"
-                                );
-                                player.spigot().sendMessage(tc);
-                            });
-
+                            player.spigot().sendMessage(tc);
                         });
+
                     });
                 } else {
                     this.methods.validateAddress(args[1])
@@ -212,7 +200,7 @@ public class Withdraw implements CommandExecutor {
                                 });
 
                                 this.userRepository.updateUserAddress(
-                                    player.getUniqueId().toString(),
+                                    account,
                                     args[1],
                                     "withdraw"
                                 );

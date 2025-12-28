@@ -3,7 +3,7 @@ package org.Nugetzrul3.CryptoTipper.commands;
 import com.google.gson.JsonNull;
 import org.Nugetzrul3.CryptoTipper.CommandWrapper;
 import org.Nugetzrul3.CryptoTipper.Constants;
-import org.Nugetzrul3.CryptoTipper.rpcclient.Methods;
+import org.Nugetzrul3.CryptoTipper.db.UserRepository;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -14,14 +14,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 public class Balance implements CommandExecutor {
-    private final Methods methods;
+    private final UserRepository userRepository;
     private final JavaPlugin plugin;
 
     public Balance(JavaPlugin plugin) {
         if (plugin.getDescription().getCommands().containsKey("balance")) {
             plugin.getCommand("balance").setExecutor(new CommandWrapper(this, plugin));
             this.plugin = plugin;
-            this.methods = new Methods();
+            this.userRepository = new UserRepository();
         } else {
             throw new Error("Balance command not found!");
         }
@@ -32,24 +32,13 @@ public class Balance implements CommandExecutor {
         Player player = (Player) sender;
 
         player.sendMessage(ChatColor.AQUA + ChatColor.BOLD.toString() + "Getting balance...");
-        this.methods.getUserBalance(
+        this.userRepository.getUserByUuid(
             player.getUniqueId().toString()
-        ).thenAccept(response -> {
-            if (!(response.get("error") instanceof JsonNull)) {
-                Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                    ChatColor.RED + "Error getting balance! Contact admins and show them this: \n" +
-                        "Error: " + response.get("error").toString()
-                ));
-
-                return;
-            }
-
+        ).thenAccept(user ->
             Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your unconfirmed balance: " + String.format("%.8f", response.get("unconfBal").getAsDouble() - response.get("confBal").getAsDouble()) + " " + Constants.ticker + "\n"
-                    + ChatColor.GREEN + ChatColor.BOLD + "Your confirmed balance: " + response.get("confBal") + " " + Constants.ticker
-            ));
-
-        });
+                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your current balance: " + String.format("%.8f", user.balance()) + " " + Constants.ticker + "\n"
+            ))
+        );
 
         return false;
     }

@@ -6,7 +6,8 @@ public record User(
         String uuid,
         String username,
         String address,
-        String withdraw_addr
+        String withdraw_addr,
+        Double balance
 ) {
 
 }

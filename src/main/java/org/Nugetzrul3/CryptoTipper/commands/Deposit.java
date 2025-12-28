@@ -20,14 +20,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class Deposit implements CommandExecutor {
     private final JavaPlugin plugin;
-    private final Methods methods;
     private final UserRepository userRepository;
 
     public Deposit(JavaPlugin plugin) {
         if (plugin.getDescription().getCommands().containsKey("deposit")) {
             plugin.getCommand("deposit").setExecutor(new CommandWrapper(this, plugin));
             this.plugin = plugin;
-            this.methods = new Methods();
             this.userRepository = new UserRepository();
         } else {
             throw new Error("Deposit command not found!");
@@ -41,8 +39,8 @@ public class Deposit implements CommandExecutor {
         this.userRepository.getUserByUuid(
             player.getUniqueId().toString()
         ).thenAccept(user -> {
-            if (user.address() == null || user.address().isEmpty() || user.address().equals("null")) {
-                this.methods.getDepositAddress(player.getUniqueId().toString())
+            if (user.address() == null || user.address().isBlank()) {
+                Methods.getDepositAddress(player.getUniqueId().toString())
                     .thenAccept(response -> {
                         if (!(response.get("error") instanceof JsonNull)) {
                             Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(

@@ -244,42 +244,26 @@ public class SignListener implements Listener {
     private void handleBalanceCommand(Player player) {
         String account = player.getUniqueId().toString();
 
-        this.methods.getUserBalance(
+        this.userRepository.getUserByUuid(
             account
-        ).thenAccept(response -> {
-            if (!(response.get("error") instanceof JsonNull)) {
-                Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                    ChatColor.RED + "Error getting balance! Contact admins and show them this: \n" +
-                        "Error: " + response.get("error").toString()
-                ));
-
-                return;
-            }
-
+        ).thenAccept(user ->
             Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your unconfirmed balance: " + String.format("%.8f", response.get("unconfBal").getAsDouble() - response.get("confBal").getAsDouble()) + " " + Constants.ticker + "\n"
-                    + ChatColor.GREEN + ChatColor.BOLD + "Your confirmed balance: " + response.get("confBal") + " " + Constants.ticker
-            ));
-        });
+                ChatColor.AQUA + ChatColor.BOLD.toString() + "Your current balance: " + String.format("%.8f", user.balance()) + " " + Constants.ticker + "\n"
+            ))
+        );
 
     }
 
     private void handlePaymentCommand(Player player, String amount, String owner) {
-        this.methods.getUserBalance(
-            player.getUniqueId().toString()
-        ).thenAccept(balResponse -> {
-            if (!(balResponse.get("error") instanceof JsonNull)) {
-                Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                    ChatColor.RED + "Error sending payment! Contact admins and show them this: \n" +
-                        "Error: " + balResponse.get("error").toString()
-                ));
-                return;
-            }
+        String account = player.getUniqueId().toString();
 
-            if (balResponse.get("confBal").getAsDouble() < Double.parseDouble(amount)) {
+        this.userRepository.getUserByUuid(
+            account
+        ).thenAccept(user -> {
+            if (user.balance() < Double.parseDouble(amount)) {
                 Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
                     ChatColor.RED + "That amount exceeds how much " + Constants.ticker + " you have\n"
-                        + ChatColor.WHITE + "You're current balance: " + ChatColor.GREEN + balResponse.get("confBal").getAsString()
+                        + ChatColor.WHITE + "You're current balance: " + ChatColor.GREEN + String.format("%.8f", user.balance())
                         + " " + Constants.ticker
                 ));
                 return;
@@ -321,6 +305,7 @@ public class SignListener implements Listener {
     }
 
     private void handleQuickWithdrawCommand(Player player, String amount) {
+        String account = player.getUniqueId().toString();
         double reqAmount = Double.parseDouble(amount);
 
         if (reqAmount < Constants.min_withdraw) {
@@ -329,7 +314,7 @@ public class SignListener implements Listener {
         }
 
         this.withdrawRepository.getCurrentWithdrawAmount(
-            player.getUniqueId().toString(),
+            account,
             new Date(System.currentTimeMillis())
         ).thenAccept(currWithdrawAmount -> {
             if (currWithdrawAmount >= Constants.withdraw_limit) {
@@ -340,77 +325,65 @@ public class SignListener implements Listener {
                 return;
             }
 
-            this.methods.getUserBalance(
-                player.getUniqueId().toString()
-            ).thenAccept(balResponse -> {
-                if (!(balResponse.get("error") instanceof JsonNull)) {
-                    Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                        ChatColor.RED + "Error processing withdrawal! Contact admins and show them this: \n" +
-                            "Error: " + balResponse.get("error").toString()
-                    ));
-                    return;
-                }
-
-                if (Double.parseDouble(balResponse.get("confBal").getAsString()) < reqAmount) {
+            this.userRepository.getUserByUuid(
+                account
+            ).thenAccept(user -> {
+                if (user.balance() < reqAmount) {
                     Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
                         ChatColor.RED + "That amount exceeds how much " + Constants.ticker + " you have\n"
-                            + ChatColor.WHITE + "You're current balance: " + ChatColor.GREEN + balResponse.get("confBal").getAsString()
+                            + ChatColor.WHITE + "You're current balance: " + ChatColor.GREEN + String.format("%.8f", user.balance())
                             + " " + Constants.ticker
                     ));
                     return;
                 }
-                double sendAmount = reqAmount - Constants.withdraw_fee;
 
-                this.userRepository.getUserByUuid(
+                double sendAmount = reqAmount - Constants.withdraw_fee;
+                if (user.withdraw_addr() == null || user.withdraw_addr().isBlank()) {
+                    Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(ChatColor.RED + "You don't have a quick withdraw address! Please use /withdraw command first to set one!"));
+                    return;
+                }
+
+                this.methods.withdraw(
+                    user.withdraw_addr(),
+                    sendAmount,
                     player.getUniqueId().toString()
-                ).thenAccept(user -> {
-                    if (user.withdraw_addr() == null || user.withdraw_addr().isEmpty() || user.withdraw_addr().equals("null")) {
-                        Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(ChatColor.RED + "You don't have a quick withdraw address! Please use /withdraw command first to set one!"));
+                ).thenAccept(response -> {
+                    if (!(response.get("error") instanceof JsonNull)) {
+                        Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
+                            ChatColor.RED + "Error processing withdrawal! Contact admins and show them this: \n" +
+                                "Error: " + response.get("error").toString()
+                        ));
                         return;
                     }
 
-                    this.methods.withdraw(
+                    JsonObject withdrawResponse = response.get("result").getAsJsonObject();
+                    String txid = withdrawResponse.get("txid").getAsString();
+
+                    this.withdrawRepository.insertWithdraw(
+                        txid,
                         user.withdraw_addr(),
-                        sendAmount,
-                        player.getUniqueId().toString()
-                    ).thenAccept(response -> {
-                        if (!(response.get("error") instanceof JsonNull)) {
-                            Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(
-                                ChatColor.RED + "Error processing withdrawal! Contact admins and show them this: \n" +
-                                    "Error: " + response.get("error").toString()
-                            ));
-                            return;
-                        }
+                        reqAmount,
+                        user.id()
+                    );
 
-                        JsonObject withdrawResponse = response.get("result").getAsJsonObject();
-                        String txid = withdrawResponse.get("txid").getAsString();
+                    TextComponent tc = new TextComponent();
 
-                        this.withdrawRepository.insertWithdraw(
-                            txid,
-                            user.withdraw_addr(),
-                            reqAmount,
-                            user.id()
+                    tc.setText(
+                        ChatColor.GREEN + "TXID:  " + ChatColor.UNDERLINE + txid
+                    );
+                    tc.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Constants.explorer + txid));
+                    tc.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        new Text(ChatColor.GRAY + "Click to copy to open transaction")));
+
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        player.sendMessage(
+                            ChatColor.GREEN + "Success! Withdrew " + amount + " " + Constants.ticker + "\n"
+                                + ChatColor.GRAY + "Note: Transaction may not be reflected on explorer yet. But \n"
+                                + "rest assured, you're " + Constants.ticker + " has been sent"
                         );
-
-                        TextComponent tc = new TextComponent();
-
-                        tc.setText(
-                            ChatColor.GREEN + "TXID:  " + ChatColor.UNDERLINE + txid
-                        );
-                        tc.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Constants.explorer + txid));
-                        tc.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                            new Text(ChatColor.GRAY + "Click to copy to open transaction")));
-
-                        Bukkit.getScheduler().runTask(plugin, () -> {
-                            player.sendMessage(
-                                ChatColor.GREEN + "Success! Withdrew " + amount + " " + Constants.ticker + "\n"
-                                    + ChatColor.GRAY + "Note: Transaction may not be reflected on explorer yet. But \n"
-                                    + "rest assured, you're " + Constants.ticker + " has been sent"
-                            );
-                            player.spigot().sendMessage(tc);
-                        });
-
+                        player.spigot().sendMessage(tc);
                     });
+
                 });
             });
         });

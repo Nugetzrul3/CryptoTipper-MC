@@ -8,15 +8,10 @@ import java.util.concurrent.CompletableFuture;
 
 /// Contains RPC methods that are used throughout the tip plugin
 public class Methods {
-    private final Client client;
 
-    public Methods() {
-        this.client = new Client();
-    }
-
-    public CompletableFuture<JsonObject> getBlockchainInfo() {
-        CompletableFuture<HttpResponse<String>> blockchainInfo = this.client.sendRequest("getblockchaininfo");
-        CompletableFuture<HttpResponse<String>> networkHashPs = this.client.sendRequest("getnetworkhashps");
+    public static CompletableFuture<JsonObject> getBlockchainInfo() {
+        CompletableFuture<HttpResponse<String>> blockchainInfo = Client.sendRequest("getblockchaininfo");
+        CompletableFuture<HttpResponse<String>> networkHashPs = Client.sendRequest("getnetworkhashps");
 
         return blockchainInfo.thenCombine(networkHashPs, (blockchainResp, networkResp) -> {
             JsonObject blockchainJson = JsonParser.parseString(blockchainResp.body()).getAsJsonObject();
@@ -39,56 +34,11 @@ public class Methods {
         });
     }
 
-    // to be removed
-    public CompletableFuture<JsonObject> getUserBalance(String uuid) {
-        JsonArray params =  new JsonArray();
-        params.add(uuid);
-        params.add(0);
-
-        CompletableFuture<HttpResponse<String>> userBalanceUnconfirmed = this.client.sendRequest(
-            "getbalance",
-            params
-        );
-
-        params.remove(1);
-        params.add(Constants.conf);
-
-        CompletableFuture<HttpResponse<String>> userBalanceConfirmed = this.client.sendRequest(
-            "getbalance",
-            params
-        );
-
-        return userBalanceUnconfirmed.thenCombine(userBalanceConfirmed, (unconfirmedResp, confirmedResp) -> {
-            JsonObject unconfirmedJson = JsonParser.parseString(unconfirmedResp.body()).getAsJsonObject();
-            JsonObject confirmedJson = JsonParser.parseString(confirmedResp.body()).getAsJsonObject();
-
-            // Handle error responses gracefully
-            if (unconfirmedResp.statusCode() != 200 || !(unconfirmedJson.get("error") instanceof JsonNull)) {
-                return unconfirmedJson; // contains error info from Bitcoin RPC
-            }
-
-            if (confirmedResp.statusCode() != 200 || !(confirmedJson.get("error") instanceof JsonNull)) {
-                return confirmedJson; // contains error info
-            }
-
-            JsonElement confResult = confirmedJson.get("result");
-            JsonElement unconfResult = unconfirmedJson.get("result");
-            JsonObject resultJson = new JsonObject();
-
-            resultJson.add("confBal", confResult);
-            resultJson.add("unconfBal", unconfResult);
-            resultJson.add("error", null);
-
-            return resultJson;
-        });
-
-    }
-
-    public CompletableFuture<JsonObject> getDepositAddress(String uuid) {
+    public static CompletableFuture<JsonObject> getDepositAddress(String uuid) {
         JsonArray params =  new JsonArray();
         params.add(uuid);
 
-        return this.client.sendRequest(
+        return Client.sendRequest(
             "getnewaddress",
             params
         ).thenApply(response -> JsonParser.parseString(response.body()).getAsJsonObject());
@@ -98,7 +48,7 @@ public class Methods {
         JsonArray params = new JsonArray();
         params.add(address);
 
-        return this.client.sendRequest(
+        return Client.sendRequest(
             "validateaddress",
             params
         ).thenApply(response -> JsonParser.parseString(response.body()).getAsJsonObject());
@@ -112,13 +62,15 @@ public class Methods {
         params.add(account2);
         params.add(amount);
 
-        return this.client.sendRequest(
+        return Client.sendRequest(
             "move",
             params
         ).thenApply(response -> JsonParser.parseString(response.body()).getAsJsonObject());
 
     }
 
+
+    // Will have withdraw service that will use sendmany, querying all the withdraw requests
     // to be removed
     public CompletableFuture<JsonObject> withdraw(String address, Double amount, String uuid) {
         JsonArray params = new JsonArray();
@@ -128,7 +80,7 @@ public class Methods {
 
         Double withdrawalFee = Constants.withdraw_fee;
 
-        return this.client.sendRequest("sendfrom", params)
+        return Client.sendRequest("sendfrom", params)
             .thenApply(response -> JsonParser.parseString(response.body()).getAsJsonObject())
             .thenCompose(response -> {
                 if (!(response.get("error") instanceof JsonNull)) {
@@ -162,7 +114,7 @@ public class Methods {
         JsonArray txParams = new JsonArray();
         txParams.add(txid);
 
-        return this.client.sendRequest("gettransaction", txParams)
+        return Client.sendRequest("gettransaction", txParams)
             .thenApply(txResponse -> JsonParser.parseString(txResponse.body()).getAsJsonObject())
             .thenApply(txResponse -> {
                 if (!(txResponse.get("error") instanceof JsonNull)) {
@@ -182,7 +134,7 @@ public class Methods {
         moveParams1.add("crypto-tipper-main");
         moveParams1.add(withdrawalFee);
 
-        return this.client.sendRequest("move", moveParams1)
+        return Client.sendRequest("move", moveParams1)
             .thenApply(response -> JsonParser.parseString(response.body()).getAsJsonObject())
             .thenCompose(moveResponse1 -> {
                 if (!(moveResponse1.get("error") instanceof JsonNull)) {
@@ -195,7 +147,7 @@ public class Methods {
                 moveParams2.add(uuid);
                 moveParams2.add(-txFee);
 
-                return this.client.sendRequest("move", moveParams2)
+                return Client.sendRequest("move", moveParams2)
                     .thenApply(response -> JsonParser.parseString(response.body()).getAsJsonObject())
                     .thenApply(moveResponse2 -> {
                         if (!(moveResponse2.get("error") instanceof JsonNull)) {

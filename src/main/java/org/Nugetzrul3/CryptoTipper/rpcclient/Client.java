@@ -13,13 +13,9 @@ import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 
 public class Client {
-    private final HttpClient client;
+    private static final HttpClient client = HttpClient.newHttpClient();
 
-    public Client() {
-        client = HttpClient.newHttpClient();
-    }
-
-    public CompletableFuture<HttpResponse<String>> sendRequest(String method) {
+    public static CompletableFuture<HttpResponse<String>> sendRequest(String method) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("method", method);
         jsonObject.add("params", new JsonArray());
@@ -39,7 +35,7 @@ public class Client {
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
     }
 
-    public CompletableFuture<HttpResponse<String>> sendRequest(String method, JsonArray params) {
+    public static CompletableFuture<HttpResponse<String>> sendRequest(String method, JsonArray params) {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("method", method);
         jsonObject.addProperty("id", "crypto-tipper");

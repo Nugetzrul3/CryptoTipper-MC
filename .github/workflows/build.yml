@@ -1,0 +1,45 @@
+name: Build ShadowJar
+
+on:
+  push:
+    branches:
+      - "**"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 24 (OpenJDK)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 24
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build ShadowJar (all branches)
+        run: ./gradlew shadowJar
+
+      - name: Zip ShadowJar (main only)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          mkdir release
+          cp build/libs/*.jar release/
+          cp sync/* release/
+          zip -r shadowjar.zip release
+
+      - name: Create GitHub Release (main only)
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
+          files: shadowjar.zip

@@ -43,9 +43,10 @@ public class Database {
                         username TEXT,
                         address TEXT DEFAULT NULL,
                         withdraw_addr TEXT DEFAULT NULL
+                        balance DECIMAL(20, 8) DEFAULT 0
                     )
                     """;
-            statement.execute(createUserScript);
+            statement.addBatch(createUserScript);
 
             String createWithdrawScript = """
                     CREATE TABLE IF NOT EXISTS withdraws(
@@ -55,12 +56,27 @@ public class Database {
                         amount DECIMAL(20, 8),
                         time DATE DEFAULT CURRENT_DATE,
                         user_id INTEGER NOT NULL,
-                        withdrawn BOOLEAN DEFAULT FALSE
+                        withdrawn BOOLEAN DEFAULT FALSE,
+                        cancelled BOOLEAN DEFAULT FALSE,
                         FOREIGN KEY (user_id) REFERENCES users(id)
                     )
                     """;
 
-            statement.execute(createWithdrawScript);
+            statement.addBatch(createWithdrawScript);
+
+            String createDepositScript = """
+                    CREATE TABLE IF NOT EXISTS deposits(
+                        id SERIAL PRIMARY KEY,
+                        txid TEXT UNIQUE,
+                        amount DECIMAL(20, 8),
+                        user_id INTEGER NOT NULL,
+                        confirmed BOOLEAN DEFAULT FALSE,
+                        FOREIGN KEY (user_id) REFERENCES users(id)
+                    )
+            """;
+
+            statement.addBatch(createDepositScript);
+            statement.executeBatch();
 
         }
     }

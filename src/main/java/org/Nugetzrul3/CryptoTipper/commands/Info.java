@@ -16,14 +16,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 public class Info implements CommandExecutor {
-    private final Methods methods;
     private final JavaPlugin plugin;
 
     public Info(JavaPlugin plugin) {
         if (plugin.getDescription().getCommands().containsKey("info")) {
             plugin.getCommand("info").setExecutor(new CommandWrapper(this, plugin));
             this.plugin = plugin;
-            this.methods = new Methods();
         } else {
             throw new Error("Info command not found!");
         }
@@ -33,7 +31,7 @@ public class Info implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         Player player = (Player) sender;
         player.sendMessage(ChatColor.AQUA + ChatColor.BOLD.toString() + "Getting blockchain info...");
-        this.methods.getBlockchainInfo()
+        Methods.getBlockchainInfo()
                 .thenAccept(response -> {
                     if (!(response.get("error") instanceof JsonNull)) {
                         Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage(

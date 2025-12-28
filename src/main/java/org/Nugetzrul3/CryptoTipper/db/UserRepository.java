@@ -10,22 +10,55 @@ import java.util.concurrent.CompletableFuture;
 public class UserRepository {
     public CompletableFuture<Void> upsertUser(String uuid, String username) {
         return CompletableFuture.runAsync(() -> {
-            try (Connection conn = Database.getInstance().getConnection()) {
-                // Try insert or update, and return the row
-                try (PreparedStatement stmt = conn.prepareStatement(
-                        "INSERT INTO users (uuid, username) VALUES (?, ?) " +
-                                "ON CONFLICT (uuid) DO UPDATE SET username = EXCLUDED.username"
-                )) {
-                    stmt.setString(1, uuid);
-                    stmt.setString(2, username);
+            try (
+                Connection conn = Database.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(
+                 "INSERT INTO users (uuid, username) VALUES (?, ?) " +
+                     "ON CONFLICT (uuid) DO UPDATE SET username = EXCLUDED.username"
+                )
+            ) {
+                // Try insert or update
+                stmt.setString(1, uuid);
+                stmt.setString(2, username);
 
-                    stmt.executeUpdate();
-                }
+                stmt.executeUpdate();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         });
 
+    }
+
+    public void tipUser(String senderUuid, String receiverUuid, Double amount) {
+        CompletableFuture.runAsync(() -> {
+            try (Connection conn = Database.getInstance().getConnection()) {
+                conn.setAutoCommit(false);
+
+                try (
+                    PreparedStatement debit = conn.prepareStatement(
+                        "UPDATE users SET balance = balance - ? WHERE id = ?"
+                    );
+                    PreparedStatement credit = conn.prepareStatement(
+                        "UPDATE users SET balance = balance + ? WHERE id = ?"
+                    )
+                ) {
+                    // simulate a 'move'
+                    debit.setDouble(1, amount);
+                    debit.setString(2, senderUuid);
+                    debit.executeUpdate();
+
+                    credit.setDouble(1, amount);
+                    credit.setString(2, receiverUuid);
+                    credit.executeUpdate();
+
+                    conn.commit();
+                } catch (SQLException e) {
+                    conn.rollback();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public CompletableFuture<User> getUserByUuid(String uuid) {
@@ -39,11 +72,12 @@ public class UserRepository {
 
                 if (rs.next()) {
                     return new User(
-                            rs.getInt(1),
-                            rs.getString(2),
-                            rs.getString(3),
-                            rs.getString(4),
-                            rs.getString(5)
+                        rs.getInt(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getString(4),
+                        rs.getString(5),
+                        rs.getDouble(6)
                     );
                 } else {
                     return null;
@@ -66,11 +100,12 @@ public class UserRepository {
 
                 if (rs.next()) {
                     return new User(
-                            rs.getInt(1),
-                            rs.getString(2),
-                            rs.getString(3),
-                            rs.getString(4),
-                            rs.getString(5)
+                        rs.getInt(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getString(4),
+                        rs.getString(5),
+                        rs.getDouble(6)
                     );
                 } else {
                     return null;
@@ -104,6 +139,7 @@ public class UserRepository {
         });
     }
 
+    // maybe for admin usages???
     public CompletableFuture<Void> deleteUser(String uuid) {
         return CompletableFuture.runAsync(() -> {
             try (
