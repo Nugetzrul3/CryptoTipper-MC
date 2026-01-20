@@ -1,3 +1,5 @@
+## I have decided to discontinue this project due to its violations of Minecraft's EULA. If you wish to use this plugin, do so at your own risk
+
 # Crypto-Tipper
 A simple Minecraft TipBot for Bitcoin (and bitcoin based coins). Add crypto to your server!
 
